@@ -1,7 +1,8 @@
 import axios from "axios";
-import { NextResponse } from "next/server";
+import { User } from "@/app/types";
+import { NextRequest, NextResponse } from "next/server";
 
-class R {
+class API {
   url: string;
   constructor(baseURL: string) {
     this.url = baseURL;
@@ -11,10 +12,19 @@ class R {
   }
 }
 
-const api = new R("https://jsonplaceholder.typicode.com");
+const api = new API("https://jsonplaceholder.typicode.com");
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const query = request.nextUrl.searchParams.get("query");
+
   return api.getUsers().then((data) => {
-    return NextResponse.json(data);
+    if (query) {
+      const filterData = data.filter((user: User) => {
+        return user.username.toLowerCase().includes(query.toLowerCase());
+      });
+      return NextResponse.json(filterData);
+    } else {
+      return NextResponse.json(data);
+    }
   });
 }
